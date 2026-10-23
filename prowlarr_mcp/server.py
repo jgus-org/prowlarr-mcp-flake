@@ -22,16 +22,24 @@ class ProwlarrClient:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             body = exc.response.text.strip()
-            raise RuntimeError(f"Prowlarr returned {exc.response.status_code} for {method} {path}: {body[:200]}") from exc
+            raise RuntimeError(
+                f"Prowlarr returned {exc.response.status_code} for {method} {path}: {body[:200]}"
+            ) from exc
         except httpx.RequestError as exc:
-            raise RuntimeError(f"Could not reach Prowlarr at {self.http.base_url}: {exc}") from exc
+            raise RuntimeError(
+                f"Could not reach Prowlarr at {self.http.base_url}: {exc}"
+            ) from exc
         return response.json()
 
     async def search(self, params: dict[str, Any]) -> list[dict[str, Any]]:
         return await self._request("GET", "/api/v1/search", params=params)
 
     async def grab(self, guid: str, indexer_id: int) -> dict[str, Any]:
-        return await self._request("POST", "/api/v1/search", json={"guid": guid, "indexerId": indexer_id})
+        return await self._request(
+            "POST",
+            "/api/v1/search",
+            json={"guid": guid, "indexerId": indexer_id},
+        )
 
     async def indexers(self) -> list[dict[str, Any]]:
         return await self._request("GET", "/api/v1/indexer")
@@ -87,16 +95,32 @@ def _summarize_release(release: dict[str, Any]) -> dict[str, Any]:
         "grabs": release.get("grabs"),
         "ageDays": release.get("age"),
         "publishDate": release.get("publishDate"),
-        "categories": [c.get("name") for c in (release.get("categories") or []) if c.get("name")],
+        "categories": [
+            c.get("name")
+            for c in (release.get("categories") or [])
+            if c.get("name")
+        ],
         "infoUrl": release.get("infoUrl"),
     }
 
 
-def _flatten_categories(categories: Iterable[dict[str, Any]], parent: str | None = None) -> list[dict[str, Any]]:
+def _flatten_categories(
+    categories: Iterable[dict[str, Any]], parent: str | None = None
+) -> list[dict[str, Any]]:
     flat: list[dict[str, Any]] = []
     for category in categories:
-        flat.append({"id": category.get("id"), "name": category.get("name"), "parent": parent})
-        flat.extend(_flatten_categories(category.get("subCategories") or [], category.get("name")))
+        flat.append(
+            {
+                "id": category.get("id"),
+                "name": category.get("name"),
+                "parent": parent,
+            }
+        )
+        flat.extend(
+            _flatten_categories(
+                category.get("subCategories") or [], category.get("name")
+            )
+        )
     return flat
 
 
@@ -113,7 +137,11 @@ async def search(
 
     search_type is the Newznab/Torznab search mode: "search" (generic, works on every indexer), "tvsearch", "moviesearch", "music", or "book". indexer_ids and categories restrict the search to those indexer/category ids (see list_indexers and list_categories). Each result carries guid and indexerId, which queue_download needs to grab it.
     """
-    params: dict[str, Any] = {"query": query, "type": search_type, "limit": limit}
+    params: dict[str, Any] = {
+        "query": query,
+        "type": search_type,
+        "limit": limit,
+    }
     if indexer_ids:
         params["indexerIds"] = indexer_ids
     if categories:
@@ -123,7 +151,9 @@ async def search(
 
 
 @mcp.tool()
-async def queue_download(ctx: Context, guid: str, indexer_id: int) -> dict[str, Any]:
+async def queue_download(
+    ctx: Context, guid: str, indexer_id: int
+) -> dict[str, Any]:
     """Grab a release, sending it to the download client Prowlarr is configured to use.
 
     guid and indexer_id come from a search result. Prowlarr resolves the release from its cache of recent searches, so grab shortly after searching.
