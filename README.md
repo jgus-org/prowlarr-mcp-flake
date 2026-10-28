@@ -7,7 +7,7 @@ Nix flake providing **prowlarr-mcp**, a stdio MCP server that searches a Prowlar
 - `packages.<system>.prowlarr-mcp` — the package, installing the `prowlarr-mcp` console script at `bin/prowlarr-mcp`.
 - `packages.<system>.default` — the same package.
 
-Packages are the flake's only outputs, defined for `x86_64-linux`, `aarch64-linux`, and `aarch64-darwin`. The package builds entirely from nixpkgs (`python3`, its `mcp` and `httpx` bindings, and `hatchling`) and vendors no distribution of its own; the flake declares it MIT-licensed.
+Packages are the flake's only outputs, defined for `x86_64-linux`, `aarch64-linux`, and `aarch64-darwin`. The package builds entirely from nixpkgs (`python3`, its `mcp` and `httpx` bindings, and `hatchling`) and vendors no distribution of its own.
 
 Consume the package from a flake input:
 
@@ -42,3 +42,5 @@ Requests are given 60 s, with a 10 s connect limit. A non-2xx response raises `P
 ## Sharp edges
 
 `queue_download` resolves the `guid` from Prowlarr's cache of recent searches, so it succeeds only shortly after the `search` call that returned that release. A grab of an older `guid` fails with whatever error Prowlarr returns.
+
+See [LICENSE.md](LICENSE.md) for licensing and copyright.
