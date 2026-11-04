@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 
 DEFAULT_URL = "http://prowlarr.home.gustafson.me:9696"
 
@@ -49,7 +49,7 @@ class ProwlarrClient:
 
 
 @asynccontextmanager
-async def _lifespan(_server: FastMCP) -> AsyncIterator[ProwlarrClient]:
+async def _lifespan(_server: MCPServer) -> AsyncIterator[ProwlarrClient]:
     api_key = os.environ.get("PROWLARR_API_KEY")
     if not api_key:
         raise RuntimeError("PROWLARR_API_KEY is not set")
@@ -62,7 +62,7 @@ async def _lifespan(_server: FastMCP) -> AsyncIterator[ProwlarrClient]:
         yield ProwlarrClient(http=http)
 
 
-mcp = FastMCP("prowlarr", lifespan=_lifespan)
+mcp = MCPServer("prowlarr", lifespan=_lifespan)
 
 
 def _client(ctx: Context) -> ProwlarrClient:
