@@ -8,6 +8,7 @@ from typing import Any
 
 import httpx
 from mcp.server.mcpserver import Context, MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 
 DEFAULT_URL = "http://prowlarr.home.gustafson.me:9696"
 
@@ -22,11 +23,11 @@ class ProwlarrClient:
             response.raise_for_status()
         except httpx.HTTPStatusError as exc:
             body = exc.response.text.strip()
-            raise RuntimeError(
+            raise ToolError(
                 f"Prowlarr returned {exc.response.status_code} for {method} {path}: {body[:200]}"
             ) from exc
         except httpx.RequestError as exc:
-            raise RuntimeError(
+            raise ToolError(
                 f"Could not reach Prowlarr at {self.http.base_url}: {exc}"
             ) from exc
         return response.json()
